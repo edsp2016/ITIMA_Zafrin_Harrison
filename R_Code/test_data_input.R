@@ -1,21 +1,63 @@
-# Load 
-path <- '/Users/harrison/Desktop/test.txt'
-path2 <- '/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/Test/Ld Voc Stem_converted_normalized.csv'
+# Define Functions
+create_labeled_matrix <- function(feature_names, feature_values) {
+  if (FALSE){
+    "This function is used to create a labelled matrix
+    of equal dimension out of the CSV data.  This matrix
+    represents one stem, which will be loaded into a list
+    of stems to analyze a whole song at once.
+    
+    Params
+    ------
+    labels= A list containing the features labels from the CSV
+    values= A list containing the feature values from the CSV
+    
+    Returns
+    -------
+    A labeled matrix of equal dimensions padded with NA's
+    "
+  }
+  # Find maximum vector length in the list and fill them all equally with NA's
+  max.length <- max(sapply(values, length))
+  values <- lapply(values, function(x){c(x, rep(NA, max.length-length(x)))})
+  
+  
+}
 
-data <- read.csv(path2, header = FALSE)
+csv_to_matrix <- function(filepath) { 
+  if (FALSE){
+    "This function is used to convert my custom CSV files
+    into labeled matrices for further processing in R
+    
+    Params
+    ------
+    filepath= A string which points to the csv file
+    
+    Returns
+    -------
+    feature_names= A list containing the features labels from the CSV
+    feature_values= A list containing the feature vales from the CSV
+    "
+  }
+  data <- readLines(filepath)
+  feature_names <- list()
+  feature_values <- list()
+  for (i in 1:length(data)) {
+    line <- strsplit(data[i],",")[[1]]
+    feature <- line[1]
+    values <- as.numeric(line[2:length(line)])
+    feature_names[i] <- feature
+    feature_values[[i]] <- values
+  }
+  #return (list(feature_names, feature_values))
+  return (create_labeled_matrix(feature_names, feature_values))
+}
 
-test_data <- read.csv(path, header = FALSE)
+# Load Stem into raw_song_data
+filepath = '/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV/Ld Voc Stem_converted_normalized.csv'
+raw_song_data <- load_custom_csv(filepath)
 
-data_3 <- readLines(path2, n=3)
-allvars <- c()
-for (i in 1:3) {
-  line2 <- data_3[i]
-  line2split <- strsplit(line2,",")[[1]]
-  varname <- line2split[1]
-  # trim leading whitespace and/or check if legal name
-  values <- as.numeric(line2split[2:length(line2split)])
-  assign(varname,values)
-  allvars <- c(allvars,varname)
-}  
-# convert the results of readLines into two variable vectors named "row1" and "row2" or whatever the first element of the row actually is.
+max.length <- max(sapply(raw_song_data[[2]], length))
+values <- lapply(raw_song_data[[2]], function(x){c(x, rep(NA, max.length-length(x)))})
 
+# TRYING TO CONVERT LIST INTO MATRIX
+test <- matrix(values, nrow=length(values), ncol=length(values[[1]]), byrow=TRUE)
