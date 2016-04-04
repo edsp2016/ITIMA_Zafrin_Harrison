@@ -81,9 +81,30 @@ load_song_data <- function(path) {
 }
 
 #Plot the Loudness of Ariana Grande - One Last Time
-path <- '/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV'
-song_data <- load_song_data(path)
+path_1 <- '/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV'
+AG_OLT <- load_song_data(path_1)
+path_2 <- '/Users/harrison/Desktop/Thesis_Test/Kesha - Cmon/CSV'
+K_C <- load_song_data(path_2)
 
-for (i in 1:length(song_data)){
-   
-}
+# Plot histograms for the loudness of the lead vocal
+library("ggplot2")
+
+# Index out the lead vocal of Ariana Grande, remove NA's
+AG_LV <- AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ]
+AG_LV <- AG_LV[!is.na(AG_LV)]
+
+# Index out the lead vocal of Kesha, remove NA's
+K_LV <- K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ]
+K_LV <- K_LV[!is.na(K_LV)]
+
+# Data Frame the data?
+ariana_vox <- data.frame(loudness = AG_LV)
+kesha_vox <- data.frame(loudness = K_LV)
+
+# Combine the dataframes into one
+ariana_vox$singer <- 'Ariana Grande'
+kesha_vox$singer <- 'Kesha'
+loudness_values <- rbind(ariana_vox, kesha_vox)
+
+# Histogram Plot
+ggplot(loudness_values, aes(loudness, fill = singer)) + geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
