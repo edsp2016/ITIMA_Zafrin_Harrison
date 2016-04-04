@@ -55,7 +55,35 @@ csv_to_matrix <- function(filepath) {
   return (create_labeled_matrix(feature_names, feature_values))
 }
 
-# Load Stem into raw_song_data
-filepath = '/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV/Ld Voc Stem_converted_normalized.csv'
-raw_song_data <- csv_to_matrix(filepath)
+load_song_data <- function(path) {
+  if (FALSE){
+    "This function takes a directory of CSVs and loads them
+    into a list where each list item is a stem
+    
+    Params
+    ------
+    filepath= A string which points to the CSV directory containing the stem data
+    
+    Returns
+    -------
+    song_data= A list where each item is a matrix containing all the features of said stem
+    "
+  }
+  filenames <- dir(path, pattern =".csv")
+  song_data <- list()
+  for(i in 1:length(filenames)){
+    stem <- csv_to_matrix(file.path(path, filenames[i]))
+    song_data[[i]] <- stem
+  }
+  # Name each stem in the list
+  names(song_data) <- filenames
+  return (song_data)
+}
 
+#Plot the Loudness of Ariana Grande - One Last Time
+path <- '/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV'
+song_data <- load_song_data(path)
+
+for (i in 1:length(song_data)){
+   
+}
