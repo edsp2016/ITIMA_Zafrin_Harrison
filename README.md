@@ -137,3 +137,7 @@ K__LV_IL <- remove_NA(K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_integ
 
 ### Next Step
 #### The Main Element Should be up by an Average of ‘x’ LU (Loudness Units)?
+* Load in the lead elements loudness
+* Load in the loudness of the "backing track" instrumentation
+* Find the difference in loudness across time
+* Find the mean, std. deviation, variance, skewness and kurtosis of this measure for all songs in the dataset.
