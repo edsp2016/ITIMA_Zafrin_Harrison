@@ -106,5 +106,6 @@ ariana_vox$singer <- 'Ariana Grande'
 kesha_vox$singer <- 'Kesha'
 loudness_values <- rbind(ariana_vox, kesha_vox)
 
-# Histogram Plot
+# Histogram Plot or Density Curve?
 ggplot(loudness_values, aes(loudness, fill = singer)) + geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
+ggplot(loudness_values, aes(loudness, fill = singer)) + geom_density(alpha = 0.2)
