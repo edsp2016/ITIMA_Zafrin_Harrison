@@ -13,6 +13,12 @@ To quantify the data, the author is developing a python library whose source cod
 #### Understanding The Data (What Does It Mean?)
 For those without a background in music production, understanding exactly what the "mixing" stage of the song creation process is can be confusing.  In this section I hope to bring you up to speed in understanding what the data means in relation to the question.
 
+Firstly, what does a mixed song vs. an unmixed song sound like...here is one example from the dataset:
+
+[Mixed Song](https://drive.google.com/uc?id=0B39ZYiJJxa_zRmhCQThYSDFtT0k)
+
+[Randomized Unmixed Song](https://drive.google.com/uc?id=0B39ZYiJJxa_zMzJZYzJuajlXT2c)
+
 When we first discretize the audio, it exists in the "time domain" as a series of values between -1 and 1:
 
 ![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zOXhDQ0stcEt2U1k "Raw Audio Data")
@@ -27,5 +33,91 @@ The same can be said about **spectral** features.  For example, here we analyze 
 
 ![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zY2tuanRzdDN5LXc "STFT and Spectral Centroid")
 
-### Plan of Attack
+### Getting the Data into R
+
+`load_song_data(path)` is the main function called on a folder which contains the .csv data.
+
+```R
+load_song_data <- function(path) {
+  filenames <- dir(path, pattern =".csv")
+  song_data <- list()
+  for(i in 1:length(filenames)){
+	stem <- csv_to_matrix(file.path(path, filenames[i]))
+	song_data[[i]] <- stem
+  }
+  # Name each stem in the list
+  names(song_data) <- filenames
+  return (song_data)
+}
+```
+
+This function calls `csv_to_matrix(filepath)`, which takes the csv file and converts it into a labelled matrix using the function `create_labeled_matrix(feature_names, feature_values)`
+
+```R
+csv_to_matrix <- function(filepath) { 
+  data <- readLines(filepath)
+  feature_names <- list()
+  feature_values <- list()
+  for (i in 1:length(data)) {
+	line <- strsplit(data[i],",")[[1]]
+	feature <- line[1]
+	values <- c(as.numeric(line[2:length(line)]))
+	feature_names[i] <- feature
+	feature_values[[i]] <- values
+  }
+  #return (list(feature_names, feature_values))
+  return (create_labeled_matrix(feature_names, feature_values))
+```
+
+```R
+ create_labeled_matrix <- function(feature_names, feature_values) {
+  # Find maximum vector length in the list and fill them all equally with NA's
+  max.length <- max(sapply(feature_values, length))
+  feature_values <- lapply(feature_values, function(x){c(x, rep(NA, max.length-length(x)))})
+  # Create the matrix
+  feature_values <- do.call(rbind, feature_values)
+  # Label the matrix
+  rownames(feature_values) <- feature_names
+  return (feature_values)
+  }
+```
+
+#### Getting Meaning Out of the Data 
+
+With these functions, each songs data is stored in a list containing a matrix for each audio stem.  Therefore as an example, if I wanted to compare the momentary loudness values for the lead vocal stems of Ariana Grandes "One Last Time" and Keshas "Cmon", I can do so in the following manner:
+
+```R
+# Load my Data
+AG_OLT <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV')
+K_C <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Kesha - Cmon/CSV')
+
+# ggplot2 for the nice graphics
+library("ggplot2")
+
+# Index out the lead vocal of Ariana Grande, remove NA's
+AG_LV <- AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ]
+AG_LV <- AG_LV[!is.na(AG_LV)]
+
+# Index out the lead vocal of Kesha, remove NA's
+K_LV <- K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ]
+K_LV <- K_LV[!is.na(K_LV)]
+
+# Data Frame the data?
+ariana_vox <- data.frame(loudness = AG_LV)
+kesha_vox <- data.frame(loudness = K_LV)
+
+# Combine the dataframes into one
+ariana_vox$singer <- 'Ariana Grande'
+kesha_vox$singer <- 'Kesha'
+loudness_values <- rbind(ariana_vox, kesha_vox)
+
+# Histogram Plot or Density Curve?
+ggplot(loudness_values, aes(loudness, fill = singer)) + geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
+ggplot(loudness_values, aes(loudness, fill = singer)) + geom_density(alpha = 0.2)
+```
+
+The above code results in the following density plot:
+
+![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zaWZBT2I4N1Y3Qm8 "Lead Vocal Loudness Similarity")
+
 

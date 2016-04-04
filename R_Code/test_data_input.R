@@ -80,13 +80,11 @@ load_song_data <- function(path) {
   return (song_data)
 }
 
-#Plot the Loudness of Ariana Grande - One Last Time
-path_1 <- '/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV'
-AG_OLT <- load_song_data(path_1)
-path_2 <- '/Users/harrison/Desktop/Thesis_Test/Kesha - Cmon/CSV'
-K_C <- load_song_data(path_2)
+# Load my Data
+AG_OLT <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV')
+K_C <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Kesha - Cmon/CSV')
 
-# Plot histograms for the loudness of the lead vocal
+# ggplot2 for the nice graphics
 library("ggplot2")
 
 # Index out the lead vocal of Ariana Grande, remove NA's
