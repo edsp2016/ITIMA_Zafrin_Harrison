@@ -17,11 +17,14 @@ create_labeled_matrix <- function(feature_names, feature_values) {
     "
   }
   # Find maximum vector length in the list and fill them all equally with NA's
-  max.length <- max(sapply(values, length))
-  values <- lapply(values, function(x){c(x, rep(NA, max.length-length(x)))})
-  
-  
-}
+  max.length <- max(sapply(feature_values, length))
+  feature_values <- lapply(feature_values, function(x){c(x, rep(NA, max.length-length(x)))})
+  # Create the matrix
+  feature_values <- do.call(rbind, feature_values)
+  # Label the matrix
+  rownames(feature_values) <- feature_names
+  return (feature_values)
+  }
 
 csv_to_matrix <- function(filepath) { 
   if (FALSE){
@@ -44,7 +47,7 @@ csv_to_matrix <- function(filepath) {
   for (i in 1:length(data)) {
     line <- strsplit(data[i],",")[[1]]
     feature <- line[1]
-    values <- as.numeric(line[2:length(line)])
+    values <- c(as.numeric(line[2:length(line)]))
     feature_names[i] <- feature
     feature_values[[i]] <- values
   }
@@ -54,10 +57,5 @@ csv_to_matrix <- function(filepath) {
 
 # Load Stem into raw_song_data
 filepath = '/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV/Ld Voc Stem_converted_normalized.csv'
-raw_song_data <- load_custom_csv(filepath)
+raw_song_data <- csv_to_matrix(filepath)
 
-max.length <- max(sapply(raw_song_data[[2]], length))
-values <- lapply(raw_song_data[[2]], function(x){c(x, rep(NA, max.length-length(x)))})
-
-# TRYING TO CONVERT LIST INTO MATRIX
-test <- matrix(values, nrow=length(values), ncol=length(values[[1]]), byrow=TRUE)
