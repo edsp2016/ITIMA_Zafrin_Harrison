@@ -80,6 +80,10 @@ load_song_data <- function(path) {
   return (song_data)
 }
 
+remove_NA <- function(x) {
+  return (x <- x[!is.na(x)])
+}
+
 # Load my Data
 AG_OLT <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV')
 K_C <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Kesha - Cmon/CSV')
@@ -88,12 +92,10 @@ K_C <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Kesha - Cmon/CSV')
 library("ggplot2")
 
 # Index out the lead vocal of Ariana Grande, remove NA's
-AG_LV <- AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ]
-AG_LV <- AG_LV[!is.na(AG_LV)]
+AG_LV <- remove_NA(AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ])
 
 # Index out the lead vocal of Kesha, remove NA's
-K_LV <- K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ]
-K_LV <- K_LV[!is.na(K_LV)]
+K_LV <- remove_NA(K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ])
 
 # Data Frame the data?
 ariana_vox <- data.frame(loudness = AG_LV)
@@ -107,3 +109,7 @@ loudness_values <- rbind(ariana_vox, kesha_vox)
 # Histogram Plot or Density Curve?
 ggplot(loudness_values, aes(loudness, fill = singer)) + geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
 ggplot(loudness_values, aes(loudness, fill = singer)) + geom_density(alpha = 0.2)
+
+# Compare Intgrated Loudness for Lead Vocals
+AG_LV_IL <- remove_NA(AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_integrated', ])
+K__LV_IL <- remove_NA(K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_integrated', ])

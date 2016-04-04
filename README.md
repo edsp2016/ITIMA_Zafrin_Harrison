@@ -120,4 +120,20 @@ The above code results in the following density plot:
 
 ![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zaWZBT2I4N1Y3Qm8 "Lead Vocal Loudness Similarity")
 
+However this plot doesn't say much about the data and can even be misleading.  For example, if I were to reference the integrated loudness measures of the same data we would only see about a 3 LU difference between the two lead vocal stems:
 
+```R
+# Compare Intgrated Loudness for Lead Vocals
+AG_LV_IL <- remove_NA(AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_integrated', ])
+K__LV_IL <- remove_NA(K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_integrated', ])
+
+> AG_LV_IL
+[1] -12.13452
+
+> K__LV_IL
+[1] -14.55341
+
+```
+
+### Next Step
+#### The Main Element Should be up by an Average of ‘x’ LU (Loudness Units)?
