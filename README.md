@@ -5,6 +5,11 @@ Often the third stage of the songwriting/production process, mixing ensures that
 
 Previous research in this field has focused on creating models to autonomously sum multi-tracks in an intelligent fashion using Machine Learning, Cross Adaptive Methods, and "Knowledge Engineered Solutions".  While some of these efforts have achieved impressive results, the author of this project believes that in order for a viable model to be produced, a statistical analysis using ground truth data must be conducted.  Therefore, this project will extract a variety of audio features from professionally mixed data, and search for common trends in the extracted features in an attempt to reveal the existence of an "ideal" mixing scenario.
 
+### Project Goals
+
+1. Investigate the relationship between the lead elements loudness in comparison to the rest of the summed instrumentation.
+2. Investigate whether or not this relationship is variable depending on genre (Pop vs. EDM).
+
 ### The Data
 The raw multi-track data used in this project is from a unique dataset managed/created by the author.  Because the raw data is copyrighted and monetized material, it cannot be shared.  However, the quantification of this data can be found in the [/Data](https://github.com/edsp2016/ITIMA_Zafrin_Harrison/tree/master/Data) folder in the form of CSV files.
 
@@ -116,16 +121,24 @@ ggplot(loudness_values, aes(loudness, fill = singer)) + geom_histogram(alpha = 0
 ggplot(loudness_values, aes(loudness, fill = singer)) + geom_density(alpha = 0.2)
 ```
 
-The above code results in the following density plot:
+The above code results in the following density plot (values under -25 LU can be ignored):
 
 ![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zaWZBT2I4N1Y3Qm8 "Lead Vocal Loudness Similarity")
 
-However this plot doesn't say much about the data and can even be misleading.  For example, if I were to reference the integrated loudness measures of the same data we would only see about a 3 LU difference between the two lead vocal stems:
+Unfortunately this plot doesn't say much about the data and can even be misleading.  For example, here we see that Ariana Grandes lead vocal track has a bimodal distribution, featuring different loudness values for verse and chorus sections.  Meanwhile, Keshas lead vocal track seems to maintain a constant level of loudness regardless of where we are in the song.  However, just because Keshas lead vocal track does not increase in loudness during the chorus does not mean that:
+
+1. The loudness of the entire track did not increase during the chorus.
+2. The loudness of Keshas entire vocal bus did not increase during the chorus.
+
+Because of this, depending on what limitations we put on how we analyze the data, we can get deceptive results.  Look what happens to the density curve if Keshas "Lead Vocal" track is adjusted to include the background vocals during the chorus.  The inclusion of these vocals creates a bimodal distribution similar to Arianas, who because of a creative decision to match the intensity of the chorus through volume automation instead of additive vocal takes, contains this bimodal distribution inherently without manual modification.  For this reason Arianas background vocal track does not change the loudness of the bussed vocal channel.
+
+![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zdk9uTGhzZXRPZE0 "Kesha Adjusted")
 
 ```R
 # Compare Intgrated Loudness for Lead Vocals
 AG_LV_IL <- remove_NA(AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_integrated', ])
 K__LV_IL <- remove_NA(K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_integrated', ])
+K_LV_IL_2 <- remove_NA(K_C$`lv_test.csv`['loudness_integrated', ])
 
 > AG_LV_IL
 [1] -12.13452
@@ -133,11 +146,72 @@ K__LV_IL <- remove_NA(K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_integ
 > K__LV_IL
 [1] -14.55341
 
+> K_LV_IL_2
+[1] -12.03277
+
 ```
 
-### Next Step
-#### The Main Element Should be up by an Average of ‘x’ LU (Loudness Units)?
-* Load in the lead elements loudness
-* Load in the loudness of the "backing track" instrumentation
-* Find the difference in loudness across time
-* Find the mean, std. deviation, variance, skewness and kurtosis of this measure for all songs in the dataset.
+### The Main Element Should be up by an Average of ‘x’ LU (Loudness Units)?
+As defined by Pedro Pestana in his PhD dissertation (Pestana, 2014), it is common practice amongst mix engineers to treat the "lead element" of a song uniquely in relation to the other instruments.  In his PhD dissertation, Pestana showed that in relation to every other element in the mix, the lead element should be up by an average of 4 to 6 LU.   Furthermore, in relation to the entire backing track, the lead element should be 0 to -2 LU lower than the sum of all other instruments.  Unfortunately, these results are based on the assumption that every other element in the mix besides the lead element is of "equal loudness", a common misguided line of thought in the field.  As you can see if you look at the more detailed uploaded data this assumption is false. 
+
+Surprisingly, past research which ignores this assumption achieved a similar result (Brecht De Man, Leonard, King, Reiss, 2014), showing that the lead element should be around -3LU in relation to the sum of the rest of the instrumentation.  These results are based on multiple mix engineers attempting to  mix a small group of songs independently of one another.  Contrary to that study, this project hopes to shed insight on this question from commercially available, professionally mixed recordings.
+
+#### 1. Investigate the relationship between the lead elements loudness in comparison to the rest of the summed instrumentation.
+
+For the first test, the author has decided to use only the "lead" multi-track compared to the rest of the instrumentation.  This method ignores the deceptive results seen in the density plots above as the "lead" multi-track may not be fully representative of the "lead instrument".  To acquire our lead element to backing instrumentation relationship, the lead instruments integrated loudness values are subtracted from the backing instrumentations integrated loudness levels.
+
+```R
+#Calculate and Plot LU Relationship
+LU_Difference <- lead_values - instr_values
+Song_Number <- 1:length(LU_Difference)
+results_1 <- data.frame(LU_Difference, Song_Number)	
+ggplot(results_1, aes(x=Song_Number, y=LU_Difference)) + geom_point() + scale_x_continuous(breaks=results_1$Song_Number) + geom_hline(aes(yintercept=mean(LU_Difference)), linetype=2) + ggtitle("Lead Element LU Relationship to Backing Instrumental")
+
+# Descriptive Statistics
+> describe(LU_Difference)
+  vars  n  mean   sd median trimmed mad   min  max range  skew kurtosis   se
+1    1 24 -3.34 2.05  -3.16   -3.24 1.3 -9.15 0.89 10.04 -0.72     1.07 0.42
+```
+
+![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zOF9PTV9fcWg5MzQ "LU Relationship between Lead and Instrumental")
+
+While these initial results show a similar relationship of -3LU as found in Man, Leonard, King, and Reiss 2014, some of the outlying data points seemed less than ideal. In an attempt to improve the results, I experimented with adjusting the lead vocal track to include multiple parts as shown in the previous section.  **Notice how song 2** (Kesha - Cmon) improves to be closer to the mean after it is adjusted.  While this improves the results, it is also a dangerous game of subjectivity and data manipulation.  Furthermore, it speaks to how important it is to finding the right method to compare all these complex variables.
+
+![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zaUNkVGUwQ3lqMVE "Adjusted Kesha in the LU Relationship between Lead and Instrumental")
+
+#### 2. Investigate whether or not this relationship is variable depending on genre (Pop vs. EDM).	
+
+To explore this relationships genre effect, a one way ANOVA was performed by separating the songs into two groups (EDM and Pop).  While past research has explored the spectral differences in genre from fully summed 2-tracks, no research has observed this loudness relationship across different genres.
+
+```R
+> describe(LU_Difference_edm)
+  vars  n  mean  sd median trimmed  mad   min   max range  skew kurtosis   se
+1    1 14 -2.96 1.3  -2.96   -2.88 0.98 -6.14 -0.75  5.39 -0.67     0.41 0.35
+
+> describe(LU_Difference_pop)
+  vars  n  mean   sd median trimmed  mad   min  max range skew kurtosis   se
+1    1 10 -2.92 1.75  -3.04   -3.05 0.76 -5.68 0.89  6.57 0.68    -0.03 0.55
+
+
+ggplot(LU_differences_genre, aes(x=Genre, y=LU_Difference, fill=Genre)) + geom_boxplot() + guides(fill=FALSE) + ggtitle("Lead Element LU Relationship to Backing Instrumental Between Genre Type")
+genre_ANOVA = aov(data = LU_differences_genre, LU_Difference~Genre)
+
+> summary(genre_ANOVA)
+			Df Sum Sq Mean Sq F value Pr(>F)
+Genre        1   0.01  0.0099   0.004  0.948
+Residuals   22  49.58  2.2538 
+```
+
+![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zZDFyQXhRdEYwZTQ "ANOVA Boxplot")
+
+As we can see from our ANOVA, there is no statistical difference between the two groups **(p > 0.05)**.  This implies that for the genres of Pop and EDM, the lead elements relationship to the backing instrumental is similar.
+
+### Future Work
+
+As of right now due to time constraints, I have only been able to load 24 songs into R for analyses with over 40 more remaining.  However, as shown previously, the 24 songs that are already incorporated into this investigation may not be fully optimized for comparison.  Beyond adding more data into this investigation I hope to:
+
+1. Figure out the best way to optimize the data for comparison
+2. Investigate the loudness relationship between other common instruments found across all songs in the dataset (Lead Vocal vs. Drums, Lead Vocal vs. Bass)
+3. Restructure the data input into R so that it's not overly cumbersome and complicated to work with.
+
+
