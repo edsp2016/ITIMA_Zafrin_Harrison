@@ -214,4 +214,8 @@ As of right now due to time constraints, I have only been able to load 24 songs 
 2. Investigate the loudness relationship between other common instruments found across all songs in the dataset (Lead Vocal vs. Drums, Lead Vocal vs. Bass)
 3. Restructure the data input into R so that it's not overly cumbersome and complicated to work with.
 
+### Cited Sources
 
+1. Brecht De Man, Brett Leonard, Richard King, and Joshua D. Reiss. "An analysis and evaluation of audio features for multitrack music mixtures." 15th International Society for Music Information Retrieval Conference (ISMIR 2014). 2014.
+
+2. Pestana, Pedro Duarte Leal Gomes. Automatic mixing systems using adaptive digital audio effects. Diss. Universidade Católica Portuguesa, 2013.
