@@ -197,15 +197,15 @@ K_LV <- remove_NA(K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary
 K_LV_2 <- remove_NA(K_C$`lv_test.csv`['loudness_momentary', ])
 
 # Data Frame the data?
-ariana_vox <- data.frame(loudness = AG_LV)
-kesha_vox <- data.frame(loudness = K_LV)
-kesha_vox_adjusted <- data.frame(loudness = K_LV_2)
+ariana_vox <- data.frame(loudness = AG_LV[AG_LV > -30])
+kesha_vox <- data.frame(loudness = K_LV[K_LV > -30])
+kesha_vox_adjusted <- data.frame(loudness = K_LV_2[K_LV_2 > -30])
 
 # Combine the dataframes into one
 ariana_vox$singer <- 'Ariana Grande'
 kesha_vox$singer <- 'Kesha'
 kesha_vox_adjusted$singer <- 'Kesha Adjusted'
-loudness_values <- rbind(ariana_vox, kesha_vox_adjusted)
+loudness_values <- rbind(ariana_vox, kesha_vox)
 
 # Histogram Plot or Density Curve?
 ggplot(loudness_values, aes(loudness, fill = singer)) + geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')

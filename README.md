@@ -20,9 +20,9 @@ For those without a background in music production, understanding exactly what t
 
 Firstly, what does a mixed song vs. an unmixed song sound like...here is one example from the dataset:
 
-[Mixed Song](https://drive.google.com/uc?id=0B39ZYiJJxa_zRmhCQThYSDFtT0k)
+[Mixed Song](https://drive.google.com/uc?id=0B39ZYiJJxa_zMk51TXVKaE9jMVE)
 
-[Randomized Unmixed Song](https://drive.google.com/uc?id=0B39ZYiJJxa_zMzJZYzJuajlXT2c)
+[Randomized Unmixed Song](https://drive.google.com/uc?id=0B39ZYiJJxa_zWnlFQ3JOV0dwSms)
 
 When we first discretize the audio, it exists in the "time domain" as a series of values between -1 and 1:
 
@@ -47,8 +47,8 @@ load_song_data <- function(path) {
   filenames <- dir(path, pattern =".csv")
   song_data <- list()
   for(i in 1:length(filenames)){
-	stem <- csv_to_matrix(file.path(path, filenames[i]))
-	song_data[[i]] <- stem
+  stem <- csv_to_matrix(file.path(path, filenames[i]))
+  song_data[[i]] <- stem
   }
   # Name each stem in the list
   names(song_data) <- filenames
@@ -64,11 +64,11 @@ csv_to_matrix <- function(filepath) {
   feature_names <- list()
   feature_values <- list()
   for (i in 1:length(data)) {
-	line <- strsplit(data[i],",")[[1]]
-	feature <- line[1]
-	values <- c(as.numeric(line[2:length(line)]))
-	feature_names[i] <- feature
-	feature_values[[i]] <- values
+  line <- strsplit(data[i],",")[[1]]
+  feature <- line[1]
+  values <- c(as.numeric(line[2:length(line)]))
+  feature_names[i] <- feature
+  feature_values[[i]] <- values
   }
   #return (list(feature_names, feature_values))
   return (create_labeled_matrix(feature_names, feature_values))
@@ -92,36 +92,30 @@ csv_to_matrix <- function(filepath) {
 With these functions, each songs data is stored in a list containing a matrix for each audio stem.  Therefore as an example, if I wanted to compare the momentary loudness values for the lead vocal stems of Ariana Grandes "One Last Time" and Keshas "Cmon", I can do so in the following manner:
 
 ```R
-# Load my Data
-AG_OLT <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Ariana Grande - One Last Time/CSV')
-K_C <- load_song_data('/Users/harrison/Desktop/Thesis_Test/Kesha - Cmon/CSV')
-
-# ggplot2 for the nice graphics
-library("ggplot2")
-
 # Index out the lead vocal of Ariana Grande, remove NA's
-AG_LV <- AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ]
-AG_LV <- AG_LV[!is.na(AG_LV)]
+AG_LV <- remove_NA(AG_OLT$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ])
 
 # Index out the lead vocal of Kesha, remove NA's
-K_LV <- K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ]
-K_LV <- K_LV[!is.na(K_LV)]
+K_LV <- remove_NA(K_C$`Ld Voc Stem_converted_normalized.csv`['loudness_momentary', ])
+K_LV_2 <- remove_NA(K_C$`lv_test.csv`['loudness_momentary', ])
 
 # Data Frame the data?
-ariana_vox <- data.frame(loudness = AG_LV)
-kesha_vox <- data.frame(loudness = K_LV)
+ariana_vox <- data.frame(loudness = AG_LV[AG_LV > -30])
+kesha_vox <- data.frame(loudness = K_LV[K_LV > -30])
+kesha_vox_adjusted <- data.frame(loudness = K_LV_2[K_LV_2 > -30])
 
 # Combine the dataframes into one
 ariana_vox$singer <- 'Ariana Grande'
 kesha_vox$singer <- 'Kesha'
-loudness_values <- rbind(ariana_vox, kesha_vox)
+kesha_vox_adjusted$singer <- 'Kesha Adjusted'
+loudness_values <- rbind(ariana_vox, kesha_vox_adjusted)
 
 # Histogram Plot or Density Curve?
 ggplot(loudness_values, aes(loudness, fill = singer)) + geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
 ggplot(loudness_values, aes(loudness, fill = singer)) + geom_density(alpha = 0.2)
 ```
 
-The above code results in the following density plot (values under -25 LU can be ignored):
+The above code results in the following density plot:
 
 ![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zaWZBT2I4N1Y3Qm8 "Lead Vocal Loudness Similarity")
 
@@ -164,7 +158,7 @@ For the first test, the author has decided to use only the "lead" multi-track co
 #Calculate and Plot LU Relationship
 LU_Difference <- lead_values - instr_values
 Song_Number <- 1:length(LU_Difference)
-results_1 <- data.frame(LU_Difference, Song_Number)	
+results_1 <- data.frame(LU_Difference, Song_Number) 
 ggplot(results_1, aes(x=Song_Number, y=LU_Difference)) + geom_point() + scale_x_continuous(breaks=results_1$Song_Number) + geom_hline(aes(yintercept=mean(LU_Difference)), linetype=2) + ggtitle("Lead Element LU Relationship to Backing Instrumental")
 
 # Descriptive Statistics
@@ -179,7 +173,7 @@ While these initial results show a similar relationship of -3LU as found in Man,
 
 ![alt text](https://drive.google.com/uc?id=0B39ZYiJJxa_zaUNkVGUwQ3lqMVE "Adjusted Kesha in the LU Relationship between Lead and Instrumental")
 
-#### 2. Investigate whether or not this relationship is variable depending on genre (Pop vs. EDM).	
+#### 2. Investigate whether or not this relationship is variable depending on genre (Pop vs. EDM).  
 
 To explore this relationships genre effect, a one way ANOVA was performed by separating the songs into two groups (EDM and Pop).  While past research has explored the spectral differences in genre from fully summed 2-tracks, no research has observed this loudness relationship across different genres.
 
@@ -197,7 +191,7 @@ ggplot(LU_differences_genre, aes(x=Genre, y=LU_Difference, fill=Genre)) + geom_b
 genre_ANOVA = aov(data = LU_differences_genre, LU_Difference~Genre)
 
 > summary(genre_ANOVA)
-			Df Sum Sq Mean Sq F value Pr(>F)
+      Df Sum Sq Mean Sq F value Pr(>F)
 Genre        1   0.01  0.0099   0.004  0.948
 Residuals   22  49.58  2.2538 
 ```
@@ -210,10 +204,30 @@ As we can see from our ANOVA, there is no statistical difference between the two
 
 As of right now due to time constraints, I have only been able to load 24 songs into R for analyses with over 40 more remaining.  However, as shown previously, the 24 songs that are already incorporated into this investigation may not be fully optimized for comparison.  Beyond adding more data into this investigation I hope to:
 
-1. Figure out the best way to optimize the data for comparison
-2. Investigate the loudness relationship between other common instruments found across all songs in the dataset (Lead Vocal vs. Drums, Lead Vocal vs. Bass)
-3. Restructure the data input into R so that it's not overly cumbersome and complicated to work with.
+- Figure out the best way to optimize the data for comparison.
 
+To optimize the data better for comparison, the data will be restructured such that all the lead elements will be bussed together as opposed to using only one lead element track per song.  This should account for the effect seen above where although the literal lead vocal tracks may have been creatively mixed differently across time, but converge towards the same target loudness on a macro level.
+
+- Investigate the loudness relationship between other common instruments found across all songs in the dataset (Lead Vocal vs. Drums, Lead Vocal vs. Bass)
+
+- Restructure the data input into R so that it's not overly cumbersome and complicated to work with.
+
+As of right now, the data input into R from Python is overly complicated given the task at hand.  I propose the following solution in pseudo-code for future implementation.  In this system, each song is given an integer value at the front of the filename, keeping the instrumental and lead element files tagged together.
+
+```Python
+# Given a directory of CSV files
+i = 0
+for csv in directory_of_lead_elements:
+  lead_loudness[i] = load_csv_data_into_vector(csv)
+  i += 1
+
+j = 0
+for csv in directory_of_instrumentals:
+  instrumental_loudness[j] = load_csv_data_into_vector(csv)
+  j += 1
+
+LU_Difference = lead_loudness - instrumental_loudness
+```
 ### Cited Sources
 
 1. Brecht De Man, Brett Leonard, Richard King, and Joshua D. Reiss. "An analysis and evaluation of audio features for multitrack music mixtures." 15th International Society for Music Information Retrieval Conference (ISMIR 2014). 2014.
